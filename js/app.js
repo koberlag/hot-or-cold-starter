@@ -34,34 +34,41 @@ function newGame(){
 	generateNumber();
 }
 
-function generateNumber(){
-	secretNumber = Math.floor(Math.random() * (maxGuess - minGuess + 1)) + minGuess;
-}
-
 function getFeedback(userGuess){
 	var difference = Math.abs(secretNumber - userGuess),
-		feedback   = $("#feedback");
+		guessListItems = $("#guessList").find("li"),
+		previousGuess = guessListItems.last().text(),
+		previousDifference = Math.abs(secretNumber - previousGuess);
 
-	if(difference >= 50){
-		feedback.text("Ice Cold");
+	if(userGuess == secretNumber){
+		setFeedback("Winner!");
 	}
-	else if(difference >= 30){
-		feedback.text("Cold");
+	else if(guessListItems.length == 0 || difference == previousDifference){
+		getAbsoluteFeedback(userGuess, difference)
 	}
-	else if(difference >=20){
-		feedback.text("Warm");
-	}
-	else if(difference >= 10){
-		feedback.text("Hot");
-	}
-	else if(difference >= 1){
-		feedback.text("Very Hot");
-	}
-	else if(difference == 0){
-		feedback.text("Winner!");
+	else{
+		difference > previousDifference ?  setFeedback("Colder") : setFeedback("Warmer");
 	}
 	addToGuessList(userGuess);
 	increaseCount();
+}
+
+function getAbsoluteFeedback(userGuess, difference){
+	if(difference >= 50){
+		setFeedback("Ice Cold");
+	}
+	else if(difference >= 30){
+		setFeedback("Cold");
+	}
+	else if(difference >=20){
+		setFeedback("Warm");
+	}
+	else if(difference >= 10){
+		setFeedback("Hot");
+	}
+	else if(difference >= 1){
+		setFeedback("Very Hot");
+	}
 }
 
 function addToGuessList(userGuess){
@@ -100,5 +107,9 @@ function isValidNumber(userGuess){
 
 function setFeedback(msg){
 	$("#feedback").text(msg);
+}
+
+function generateNumber(){
+	secretNumber = Math.floor(Math.random() * (maxGuess - minGuess + 1)) + minGuess;
 }
 
