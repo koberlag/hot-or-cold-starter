@@ -1,6 +1,7 @@
 var secretNumber=0,
 	minGuess = 1,
-	maxGuess = 100;
+	maxGuess = 100,
+	isGameOver = false;
 $(document).ready(function(){
 	
 	/*--- Display information modal box ---*/
@@ -15,6 +16,7 @@ $(document).ready(function(){
   	});
 
   	generateNumber();
+  	initializeCount();
   	$(".new").click(newGame);
 
   	$("form").submit(function(){
@@ -26,35 +28,34 @@ $(document).ready(function(){
   	});
 });
 
+function initializeCount(){
+	var count = "10";
+	$("#count").text(count);
+}
+
 function newGame(){
 	setFeedback("Make your Guess!");
 	$("#count").text("0");
-	$("#userGuess").val("");
+	$("#userGuess").val("").removeAttr("disabled");;
 	$("#guessList").empty();
+	isGameOver = false;
 	generateNumber();
+  	initializeCount();
 }
 
 function getFeedback(userGuess){
-	var difference = Math.abs(secretNumber - userGuess),
-		guessListItems = $("#guessList").find("li"),
-		previousGuess = guessListItems.last().text(),
-		previousDifference = Math.abs(secretNumber - previousGuess);
+	var difference = Math.abs(secretNumber - userGuess);
+	decreaseCount();
 
 	if(userGuess == secretNumber){
 		setFeedback("Winner!");
+		setGameOver
 	}
-	else if(guessListItems.length == 0 || difference == previousDifference){
-		getAbsoluteFeedback(userGuess, difference)
+	else if(Number($("#count").text()) == 0){
+		setFeedback("You Lose!");
+		setGameOver();
 	}
-	else{
-		difference > previousDifference ?  setFeedback("Colder") : setFeedback("Warmer");
-	}
-	addToGuessList(userGuess);
-	increaseCount();
-}
-
-function getAbsoluteFeedback(userGuess, difference){
-	if(difference >= 50){
+	else if(difference >= 50){
 		setFeedback("Ice Cold");
 	}
 	else if(difference >= 30){
@@ -69,6 +70,9 @@ function getAbsoluteFeedback(userGuess, difference){
 	else if(difference >= 1){
 		setFeedback("Very Hot");
 	}
+	
+	addToGuessList(userGuess);
+	$("#userGuess").val("");
 }
 
 function addToGuessList(userGuess){
@@ -76,21 +80,27 @@ function addToGuessList(userGuess){
 	$("#guessList").append(newListItem);
 }
 
-function increaseCount(){
+// function increaseCount(){
+// 	var countContainer= $("#count");
+// 	countContainer.text(Number(countContainer.text()) + 1);
+// }
+
+function decreaseCount(){
 	var countContainer= $("#count");
-	countContainer.text(+countContainer.text() + 1);
+	countContainer.text(Number(countContainer.text()) - 1);
 }
 
 function isValidInput(userGuess){
-	var isValid = true;
-	if(!isValidNumber(userGuess)){
+	var isValid = !isGameOver;
+	if(isValid && !isValidNumber(userGuess)){
 		setFeedback("Please enter a valid number between " + minGuess + " and " + maxGuess)
 		isValid = false;
 	}
-	if(alreadyGuessed(userGuess)){
+	if(isValid && alreadyGuessed(userGuess)){
 		setFeedback(userGuess + " has already been chosen");
 		isValid = false;
 	}
+	
 	return isValid;
 }
 
@@ -101,8 +111,8 @@ function alreadyGuessed(userGuess){
 }
 
 function isValidNumber(userGuess){
-	userGuess = +userGuess;
-	return (userGuess % 1 == 0) && (userGuess >= minGuess && userGuess <= maxGuess);
+	userGuess = parseInt(userGuess);
+	return (!isNaN(userGuess) && (userGuess >= minGuess && userGuess <= maxGuess));
 }
 
 function setFeedback(msg){
@@ -111,5 +121,10 @@ function setFeedback(msg){
 
 function generateNumber(){
 	secretNumber = Math.floor(Math.random() * (maxGuess - minGuess + 1)) + minGuess;
+}
+
+function setGameOver(){
+	isGameOver = true;
+	$("#userGuess").attr("disabled", "disabled"); 
 }
 
